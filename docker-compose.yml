@@ -3,22 +3,34 @@ version: '3.8'
 services:
   frontend:
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    container_name: react_app
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: blog-frontend
     restart: always
     depends_on:
       - backend
-    ports:
-      - "80:80"
+    expose:
+      - "80"
 
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: node_api
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: blog-backend
     restart: always
     environment:
       - NODE_ENV=production
     expose:
       - "5000"
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: blog-nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
+      - backend

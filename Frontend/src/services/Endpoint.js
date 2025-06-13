@@ -1,5 +1,7 @@
 import axios from 'axios';
-export const BaseUrl='http://localhost:5000'
+// export const BaseUrl='http://localhost:5000'
+export const BaseUrl='/api'
+
 const instance = axios.create({
     baseURL:BaseUrl,
     // headers: {
