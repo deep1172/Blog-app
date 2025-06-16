@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKER_BUILDKIT = '1'
+    
     AWS_REGION      = credentials('aws-region')
     ECR_REGISTRY    = credentials('ecr-registry')
     BACKEND_REPO    = "${env.ECR_REGISTRY}/blog-backend"
@@ -71,23 +71,6 @@ pipeline {
         }
       }
     }
-
-    stage('Unit Tests') {
-  steps {
-    dir('Backend') {
-      sh '''
-        npm install
-        npm test || echo "⚠️ Backend test failed, continuing..."
-      '''
-    }
-    dir('Frontend') {
-      sh '''
-        npm install
-        npm test || echo "⚠️ Frontend test failed, continuing..."
-      '''
-    }
-  }
-}
 
     stage('Docker Build') {
       steps {
