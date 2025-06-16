@@ -74,13 +74,13 @@ pipeline {
 
     stage('Unit Tests') {
   steps {
-    dir('backend') {
+    dir('Backend') {
       sh '''
         npm install
         npm test || echo "⚠️ Backend test failed, continuing..."
       '''
     }
-    dir('frontend') {
+    dir('Frontend') {
       sh '''
         npm install
         npm test || echo "⚠️ Frontend test failed, continuing..."
