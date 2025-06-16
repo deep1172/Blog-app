@@ -64,20 +64,17 @@ pipeline {
     steps {
       dir('backend') {
         sh '''
-          if ! command -v npm &> /dev/null; then echo "❌ npm not installed"; exit 1; fi
-          npm install
-          npm test || echo "⚠️ Backend test failed, continuing..."
+          docker run --rm -v $PWD:/app -w /app node:lts bash -c "npm install && npm test || echo '⚠️ Backend test failed, continuing...'"
         '''
-    }
+      }
       dir('frontend') {
         sh '''
-          if ! command -v npm &> /dev/null; then echo "❌ npm not installed"; exit 1; fi
-          npm install
-          npm test || echo "⚠️ Frontend test failed, continuing..."
+          docker run --rm -v $PWD:/app -w /app node:lts bash -c "npm install && npm test || echo '⚠️ Frontend test failed, continuing...'"
         '''
     }
   }
-}
+  }
+  
 
     stage('Docker Build') {
       steps {
