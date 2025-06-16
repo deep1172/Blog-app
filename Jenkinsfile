@@ -79,20 +79,22 @@ pipeline {
       }
     }
 
-    stage('Trivy Vulnerability Scan') {
-      steps {
-        sh '''
-            sudo apt-get install wget apt-transport-https gnupg lsb-release
-            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-            echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-            sudo apt-get update
-            sudo apt-get install trivy -y
-            
-            trivy image --severity HIGH,CRITICAL image_name
+  stage('Trivy Vulnerability Scan') {
+  steps {
+    sh '''
+        mkdir -p ~/.local/bin
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ~/.local/bin
+        export PATH="$HOME/.local/bin:$PATH"
 
-            trivy image -f json -o results.json image_name
+        trivy version
 
-          '''
+        trivy image --severity HIGH,CRITICAL --exit-code 0 blog-backend:latest
+        trivy image --severity HIGH,CRITICAL --exit-code 0 blog-frontend:latest
+
+        trivy image -f json -o trivy-backend-report.json blog-backend:latest
+
+        trivy image -f json -o trivy-frontend-report.json blog-frontend:latest
+    '''
   }
 }
 
