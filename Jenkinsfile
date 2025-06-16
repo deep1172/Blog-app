@@ -65,14 +65,16 @@ pipeline {
         dir('backend') {
           sh '''
             if ! command -v npm &> /dev/null; then echo "❌ npm not installed"; exit 1; fi
-            npm install
+            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+            sudo apt-get install -y nodejs
             npm test || echo "⚠️ Backend test failed, continuing..."
           '''
         }
         dir('frontend') {
           sh '''
             if ! command -v npm &> /dev/null; then echo "❌ npm not installed"; exit 1; fi
-            npm install
+            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+            sudo apt-get install -y nodejs
             npm test || echo "⚠️ Frontend test failed, continuing..."
           '''
         }
