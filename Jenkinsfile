@@ -82,12 +82,15 @@ pipeline {
     stage('Trivy Vulnerability Scan') {
       steps {
         sh '''
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-          trivy image --severity HIGH,CRITICAL --exit-code 0 blog-backend:latest
-          trivy image --severity HIGH,CRITICAL --exit-code 0 blog-frontend:latest
-        '''
-      }
-    }
+        mkdir -p ~/.local/bin
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ~/.local/bin
+        export PATH=$PATH:~/.local/bin
+        trivy image --severity HIGH,CRITICAL --exit-code 0 blog-backend:latest
+        trivy image --severity HIGH,CRITICAL --exit-code 0 blog-frontend:latest
+      '''
+  }
+}
+
 
     stage('Login to AWS ECR') {
       steps {
