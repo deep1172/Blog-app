@@ -34,7 +34,7 @@ pipeline {
       }
     }
 
-    stage('SonarQube - Backend') {
+     stage('SonarQube - Backend') {
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
           withSonarQubeEnv('MySonarQube') {
@@ -44,6 +44,7 @@ pipeline {
                   -Dsonar.projectKey=blog-backend \
                   -Dsonar.sources=. \
                   -Dsonar.login=$SONAR_TOKEN \
+                  -Dsonar.host.url=http://13.126.169.178:9000 \
                   -Dsonar.working.directory=.scannerwork-backend
               '''
             }
@@ -62,6 +63,7 @@ pipeline {
                   -Dsonar.projectKey=blog-frontend \
                   -Dsonar.sources=. \
                   -Dsonar.login=$SONAR_TOKEN \
+                  -Dsonar.host.url=http://13.126.169.178:9000 \
                   -Dsonar.working.directory=.scannerwork-frontend
               '''
             }
@@ -75,7 +77,7 @@ pipeline {
         dir('backend') {
           sh '''
             if ! command -v npm &> /dev/null; then
-              echo "❌ npm not found. Please install Node.js and npm on the Jenkins agent."
+              echo "❌ npm is not installed on this Jenkins agent."
               exit 1
             fi
             npm install
@@ -85,7 +87,7 @@ pipeline {
         dir('frontend') {
           sh '''
             if ! command -v npm &> /dev/null; then
-              echo "❌ npm not found. Please install Node.js and npm on the Jenkins agent."
+              echo "❌ npm is not installed on this Jenkins agent."
               exit 1
             fi
             npm install
@@ -169,7 +171,7 @@ pipeline {
       echo "✅ Pipeline completed successfully."
     }
     failure {
-      echo "❌ Pipeline failed. You may trigger rollback or alert here."
+      echo "❌ Pipeline failed. Investigate logs or trigger rollback."
     }
   }
 }
