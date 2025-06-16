@@ -80,8 +80,8 @@ pipeline {
     }
 
   stage('Trivy Vulnerability Scan') {
-  steps {
-    sh '''
+    steps {
+      sh '''
         mkdir -p ~/.local/bin
         curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ~/.local/bin
         export PATH="$HOME/.local/bin:$PATH"
@@ -98,19 +98,35 @@ pipeline {
   }
 }
 
-    stage('Login to AWS ECR') {
-      steps {
-        withCredentials([[ 
-          $class: 'AmazonWebServicesCredentialsBinding', 
-          credentialsId: 'aws-credentials' 
-        ]]) {
-          sh '''
-            aws ecr get-login-password --region "$AWS_REGION" | \
-            docker login --username AWS --password-stdin "$ECR_REGISTRY"
-          '''
-        }
-      }
+stage('Login to AWS ECR') {
+  steps {
+    withCredentials([[ 
+      $class: 'AmazonWebServicesCredentialsBinding', 
+      credentialsId: 'aws-credentials' 
+    ]]) {
+      sh '''
+        echo "🔐 Attempting ECR login..."
+        echo "Region: $AWS_REGION"
+        echo "Registry: $ECR_REGISTRY"
+
+        login_cmd=$(aws ecr get-login-password --region "$AWS_REGION")
+        if [ -z "$login_cmd" ]; then
+          echo "❌ Failed to get login password from AWS ECR"
+          exit 1
+        fi
+
+        echo "$login_cmd" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+        if [ $? -ne 0 ]; then
+          echo "❌ Docker login to ECR failed"
+          exit 1
+        fi
+
+        echo "✅ Logged into ECR successfully"
+      '''
     }
+  }
+}
 
     stage('Push Docker Images to ECR') {
       steps {
