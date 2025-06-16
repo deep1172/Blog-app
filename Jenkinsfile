@@ -16,7 +16,6 @@ pipeline {
   }
 
   stages {
-
     stage('Verify Branch') {
       when {
         anyOf {
@@ -37,59 +36,64 @@ pipeline {
 
     stage('SonarQube - Backend') {
       steps {
-      withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-        withSonarQubeEnv('MySonarQube') {
-          dir('backend') {
-          sh '''
-            sonar-scanner \
-              -Dsonar.projectKey=blog-backend \
-              -Dsonar.sources=. \
-              -Dsonar.login=$SONAR_TOKEN \
-              -Dsonar.working.directory=.scannerwork-backend
-          '''
+        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+          withSonarQubeEnv('MySonarQube') {
+            dir('backend') {
+              sh '''
+                sonar-scanner \
+                  -Dsonar.projectKey=blog-backend \
+                  -Dsonar.sources=. \
+                  -Dsonar.login=$SONAR_TOKEN \
+                  -Dsonar.working.directory=.scannerwork-backend
+              '''
+            }
+          }
         }
       }
     }
-  }
-}
 
     stage('SonarQube - Frontend') {
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-        withSonarQubeEnv('MySonarQube') {
-          dir('frontend') {
-            sh '''
-              sonar-scanner \
-              -Dsonar.projectKey=blog-frontend \
-              -Dsonar.sources=. \
-              -Dsonar.login=$SONAR_TOKEN \
-              -Dsonar.working.directory=.scannerwork-frontend
+          withSonarQubeEnv('MySonarQube') {
+            dir('frontend') {
+              sh '''
+                sonar-scanner \
+                  -Dsonar.projectKey=blog-frontend \
+                  -Dsonar.sources=. \
+                  -Dsonar.login=$SONAR_TOKEN \
+                  -Dsonar.working.directory=.scannerwork-frontend
+              '''
+            }
+          }
+        }
+      }
+    }
+
+    stage('Unit Tests') {
+      steps {
+        dir('backend') {
+          sh '''
+            if ! command -v npm &> /dev/null; then
+              echo "❌ npm not found. Please install Node.js and npm on the Jenkins agent."
+              exit 1
+            fi
+            npm install
+            npm test || echo "⚠️ Backend test failed, continuing..."
+          '''
+        }
+        dir('frontend') {
+          sh '''
+            if ! command -v npm &> /dev/null; then
+              echo "❌ npm not found. Please install Node.js and npm on the Jenkins agent."
+              exit 1
+            fi
+            npm install
+            npm test || echo "⚠️ Frontend test failed, continuing..."
           '''
         }
       }
     }
-  }
-}
-
-  stage('Unit Tests') {
-    steps {
-      dir('backend') {
-        sh '''
-          sudo usermod -aG docker jenkins
-          sudo systemctl restart docker
-          docker run --rm -v $PWD:/app -w /app node:lts bash -c "npm install && npm test || echo '⚠️ Backend test failed, continuing...'"
-        '''
-      }
-      dir('frontend') {
-        sh '''
-          sudo usermod -aG docker jenkins
-          sudo systemctl restart docker
-          docker run --rm -v $PWD:/app -w /app node:lts bash -c "npm install && npm test || echo '⚠️ Frontend test failed, continuing...'"
-        '''
-    }
-  }
-  }
-
 
     stage('Docker Build') {
       steps {
@@ -110,10 +114,7 @@ pipeline {
 
     stage('Login to AWS ECR') {
       steps {
-        withCredentials([[
-          $class: 'AmazonWebServicesCredentialsBinding',
-          credentialsId: 'aws-credentials'
-        ]]) {
+        withCredentials([[ $class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials' ]]) {
           sh '''
             aws ecr get-login-password --region "$AWS_REGION" | \
             docker login --username AWS --password-stdin "$ECR_REGISTRY"
@@ -136,10 +137,7 @@ pipeline {
     stage('Terraform Deploy Infra') {
       steps {
         dir('infra') {
-          withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-credentials'
-          ]]) {
+          withCredentials([[ $class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials' ]]) {
             sh '''
               terraform init
               terraform plan -out=tfplan
@@ -172,7 +170,6 @@ pipeline {
     }
     failure {
       echo "❌ Pipeline failed. You may trigger rollback or alert here."
-      // sh 'terraform destroy -auto-approve' or send Slack/email alerts
     }
   }
 }
