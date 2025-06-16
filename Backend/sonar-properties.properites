@@ -1,0 +1,4 @@
+sonar.projectKey=blog-backend
+sonar.projectName=Blog Backend
+sonar.sources=.
+sonar.sourceEncoding=UTF-8
