@@ -74,9 +74,8 @@ pipeline {
 
     stage('Docker Build') {
       steps {
-        sh 'docker build -t blog-backend:latest -f ./Backend/Dockerfile ./backend'
-
-        sh 'docker build -t blog-frontend:latest -f ./Frontend/Dockerfile ./frontend'
+        sh 'docker build -t blog-backend:latest ./Backend'
+        sh 'docker build -t blog-frontend:latest ./Frontend'
       }
     }
 
