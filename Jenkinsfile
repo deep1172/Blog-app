@@ -100,48 +100,33 @@ pipeline {
 
 stage('Login to AWS ECR') {
   steps {
-    withCredentials([[ 
-      $class: 'AmazonWebServicesCredentialsBinding', 
-      credentialsId: 'aws-credentials' 
-    ]]) {
+    withCredentials([
+      [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']
+    ]) {
       sh '''
-        echo "🔐 Attempting ECR login..."
-        echo "Region: $AWS_REGION"
-        echo "Registry: $ECR_REGISTRY"
-
-        login_cmd=$(aws ecr get-login-password --region "$AWS_REGION")
-        if [ -z "$login_cmd" ]; then
-          echo "❌ Failed to get login password from AWS ECR"
-          exit 1
-        fi
-
-        echo "$login_cmd" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
-
-        if [ $? -ne 0 ]; then
-          echo "❌ Docker login to ECR failed"
-          exit 1
-        fi
-
-        echo "✅ Logged into ECR successfully"
+        echo "🔐 Logging into AWS ECR..."
+        aws ecr get-login-password --region "$AWS_REGION" | \
+        docker login --username AWS --password-stdin "$ECR_REGISTRY"
       '''
     }
   }
 }
 
-    stage('Push Docker Images to ECR') {
-      steps {
-        sh '''
-          docker tag blog-backend:latest "$BACKEND_REPO:latest"
-          docker tag blog-frontend:latest "$FRONTEND_REPO:latest"
-          docker push "$BACKEND_REPO:latest"
-          docker push "$FRONTEND_REPO:latest"
-        '''
-      }
-    }
+stage('Push Docker Images to ECR') {
+  steps {
+    sh '''
+      echo "📦 Tagging and pushing Docker images..."
+      docker tag blog-backend:latest "$BACKEND_REPO:latest"
+      docker tag blog-frontend:latest "$FRONTEND_REPO:latest"
+      docker push "$BACKEND_REPO:latest"
+      docker push "$FRONTEND_REPO:latest"
+    '''
+  }
+}
 
     stage('Terraform Deploy Infra') {
       steps {
-        dir('infra') {
+        dir('terraform') {
           withCredentials([[ 
             $class: 'AmazonWebServicesCredentialsBinding', 
             credentialsId: 'aws-credentials' 
