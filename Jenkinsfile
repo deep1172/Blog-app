@@ -35,30 +35,41 @@ pipeline {
       }
     }
 
-    stage('SonarQube Code Scan') {
+    stage('SonarQube - Backend') {
       steps {
-        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-          withSonarQubeEnv('MySonarQube') {
-            dir('backend') {
-              sh """
-                sonar-scanner \
-                -Dsonar.projectKey=blog-backend \
-                -Dsonar.sources=. \
-                -Dsonar.login=$SONAR_TOKEN
-              """
-            }
-            dir('frontend') {
-              sh """
-                sonar-scanner \
-                -Dsonar.projectKey=blog-frontend \
-                -Dsonar.sources=. \
-                -Dsonar.login=$SONAR_TOKEN
-              """
-            }
-          }
+      withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+        withSonarQubeEnv('MySonarQube') {
+          dir('backend') {
+          sh '''
+            sonar-scanner \
+              -Dsonar.projectKey=blog-backend \
+              -Dsonar.sources=. \
+              -Dsonar.login=$SONAR_TOKEN \
+              -Dsonar.working.directory=.scannerwork-backend
+          '''
         }
       }
     }
+  }
+}
+
+    stage('SonarQube - Frontend') {
+      steps {
+        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+        withSonarQubeEnv('MySonarQube') {
+          dir('frontend') {
+            sh '''
+              sonar-scanner \
+              -Dsonar.projectKey=blog-frontend \
+              -Dsonar.sources=. \
+              -Dsonar.login=$SONAR_TOKEN \
+              -Dsonar.working.directory=.scannerwork-frontend
+          '''
+        }
+      }
+    }
+  }
+}
 
   stage('Unit Tests') {
     steps {
@@ -74,7 +85,7 @@ pipeline {
     }
   }
   }
-  
+
 
     stage('Docker Build') {
       steps {
