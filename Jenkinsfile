@@ -73,29 +73,21 @@ pipeline {
     }
 
     stage('Unit Tests') {
-      steps {
-        dir('backend') {
-          sh '''
-            if ! command -v npm &> /dev/null; then
-              echo "❌ npm is not installed on this Jenkins agent."
-              exit 1
-            fi
-            npm install
-            npm test || echo "⚠️ Backend test failed, continuing..."
-          '''
-        }
-        dir('frontend') {
-          sh '''
-            if ! command -v npm &> /dev/null; then
-              echo "❌ npm is not installed on this Jenkins agent."
-              exit 1
-            fi
-            npm install
-            npm test || echo "⚠️ Frontend test failed, continuing..."
-          '''
-        }
-      }
+  steps {
+    dir('backend') {
+      sh '''
+        npm install
+        npm test || echo "⚠️ Backend test failed, continuing..."
+      '''
     }
+    dir('frontend') {
+      sh '''
+        npm install
+        npm test || echo "⚠️ Frontend test failed, continuing..."
+      '''
+    }
+  }
+}
 
     stage('Docker Build') {
       steps {
