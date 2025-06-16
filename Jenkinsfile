@@ -75,11 +75,15 @@ pipeline {
     steps {
       dir('backend') {
         sh '''
+          sudo usermod -aG docker jenkins
+          sudo systemctl restart docker
           docker run --rm -v $PWD:/app -w /app node:lts bash -c "npm install && npm test || echo '⚠️ Backend test failed, continuing...'"
         '''
       }
       dir('frontend') {
         sh '''
+          sudo usermod -aG docker jenkins
+          sudo systemctl restart docker
           docker run --rm -v $PWD:/app -w /app node:lts bash -c "npm install && npm test || echo '⚠️ Frontend test failed, continuing...'"
         '''
     }
