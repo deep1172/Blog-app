@@ -98,10 +98,12 @@ pipeline {
   }
 }
 
-
     stage('Login to AWS ECR') {
       steps {
-        withCredentials([[ $class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials' ]]) {
+        withCredentials([[ 
+          $class: 'AmazonWebServicesCredentialsBinding', 
+          credentialsId: 'aws-credentials' 
+        ]]) {
           sh '''
             aws ecr get-login-password --region "$AWS_REGION" | \
             docker login --username AWS --password-stdin "$ECR_REGISTRY"
@@ -124,7 +126,10 @@ pipeline {
     stage('Terraform Deploy Infra') {
       steps {
         dir('infra') {
-          withCredentials([[ $class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials' ]]) {
+          withCredentials([[ 
+            $class: 'AmazonWebServicesCredentialsBinding', 
+            credentialsId: 'aws-credentials' 
+          ]]) {
             sh '''
               terraform init
               terraform plan -out=tfplan
@@ -145,6 +150,7 @@ pipeline {
             error "💥 Health check failed: backend=$backendStatus, frontend=$frontendStatus"
           } else {
             echo "✅ Health check passed: backend=$backendStatus, frontend=$frontendStatus"
+            echo "🌐 Access your application here: http://app-alb-189786761.ap-south-1.elb.amazonaws.com/"
           }
         }
       }
@@ -154,9 +160,12 @@ pipeline {
   post {
     success {
       echo "✅ Pipeline completed successfully."
+      echo "🚀 Application is live at: http://app-alb-189786761.ap-south-1.elb.amazonaws.com/"
     }
     failure {
-      echo "❌ Pipeline failed. Investigate logs or trigger rollback."
+      echo "❌ Pipeline failed."
+      echo "ℹ️ Rollback or manual inspection may be required."
+      echo "🔗 You can still check: http://app-alb-189786761.ap-south-1.elb.amazonaws.com/ (if infra was partially up)"
     }
   }
 }
