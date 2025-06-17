@@ -72,6 +72,7 @@ pipeline {
       }
     }
 
+
     stage('Docker Build') {
       steps {
         sh 'docker build -t blog-backend:latest ./Backend'
@@ -124,24 +125,6 @@ stage('Push Docker Images to ECR') {
   }
 }
 
-    stage('Terraform Deploy Infra') {
-      steps {
-        dir('terraform') {
-        git branch: 'main', url: 'https://github.com/deep1172/terraform-module-app.git'
-
-        withCredentials([[ 
-          $class: 'AmazonWebServicesCredentialsBinding', 
-          credentialsId: 'aws-credentials' 
-        ]]) {
-          sh '''
-          terraform init
-          terraform plan -out=tfplan
-          terraform apply -auto-approve tfplan
-          '''
-      }
-    }
-  }
-}
 
       stage('Deployment Health Check') {
         steps {
