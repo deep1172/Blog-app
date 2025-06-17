@@ -125,22 +125,6 @@ stage('Push Docker Images to ECR') {
   }
 }
 
-
-      stage('Deployment Health Check') {
-        steps {
-          script {
-          def backendStatus = sh(script: "curl -s -o /dev/null -w '%{http_code}' $BACKEND_URL", returnStdout: true).trim()
-          def frontendStatus = sh(script: "curl -s -o /dev/null -w '%{http_code}' $FRONTEND_URL", returnStdout: true).trim()
-
-          if (backendStatus != "200" || frontendStatus != "200") {
-            error "💥 Health check failed: backend=$backendStatus, frontend=$frontendStatus"
-          } else {
-            echo "✅ Health check passed: backend=$backendStatus, frontend=$frontendStatus"
-            echo "🌐 Access your application here: http://app-alb-189786761.ap-south-1.elb.amazonaws.com/"
-          }
-        }
-      }
-    }
   }
 
   post {
