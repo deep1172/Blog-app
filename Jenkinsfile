@@ -127,23 +127,25 @@ stage('Push Docker Images to ECR') {
     stage('Terraform Deploy Infra') {
       steps {
         dir('terraform') {
-          withCredentials([[ 
-            $class: 'AmazonWebServicesCredentialsBinding', 
-            credentialsId: 'aws-credentials' 
-          ]]) {
-            sh '''
-              terraform init
-              terraform plan -out=tfplan
-              terraform apply -auto-approve tfplan
-            '''
-          }
-        }
+        git branch: 'main', url: 'https://github.com/deep1172/terraform-module-app.git'
+
+        withCredentials([[ 
+          $class: 'AmazonWebServicesCredentialsBinding', 
+          credentialsId: 'aws-credentials' 
+        ]]) {
+          sh '''
+          terraform init
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
+          '''
       }
     }
+  }
+}
 
-    stage('Deployment Health Check') {
-      steps {
-        script {
+      stage('Deployment Health Check') {
+        steps {
+          script {
           def backendStatus = sh(script: "curl -s -o /dev/null -w '%{http_code}' $BACKEND_URL", returnStdout: true).trim()
           def frontendStatus = sh(script: "curl -s -o /dev/null -w '%{http_code}' $FRONTEND_URL", returnStdout: true).trim()
 
