@@ -7,8 +7,7 @@ pipeline {
     ECR_REGISTRY    = credentials('ecr-registry')
     BACKEND_REPO    = "${env.ECR_REGISTRY}/blog-backend"
     FRONTEND_REPO   = "${env.ECR_REGISTRY}/blog-frontend"
-    BACKEND_URL     = credentials('backend-health-url')
-    FRONTEND_URL    = credentials('frontend-health-url')
+
   }
 
   options {
@@ -130,12 +129,12 @@ stage('Push Docker Images to ECR') {
   post {
     success {
       echo "✅ Pipeline completed successfully."
-      echo "🚀 Application is live at: http://app-alb-189786761.ap-south-1.elb.amazonaws.com/"
+     
     }
     failure {
-      echo "❌ Pipeline failed."
-      echo "ℹ️ Rollback or manual inspection may be required."
-      echo "🔗 You can still check: http://app-alb-189786761.ap-south-1.elb.amazonaws.com/ (if infra was partially up)"
+      echo " Pipeline failed."
+      echo "Rollback or manual inspection may be required."
+     
     }
   }
 }
