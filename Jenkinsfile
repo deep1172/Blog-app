@@ -43,7 +43,7 @@ pipeline {
                   -Dsonar.projectKey=blog-backend \
                   -Dsonar.sources=. \
                   -Dsonar.login=$SONAR_TOKEN \
-                  -Dsonar.host.url=http://13.126.169.178:9000 \
+                  -Dsonar.host.url=http://3.110.130.224:9000 \
                   -Dsonar.working.directory=.scannerwork-backend
               '''
             }
