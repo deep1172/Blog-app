@@ -37,7 +37,7 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
           withSonarQubeEnv('MySonarQube') {
-            dir('backend') {
+            dir('Backend') {
               sh '''
                 sonar-scanner \
                   -Dsonar.projectKey=blog-backend \
