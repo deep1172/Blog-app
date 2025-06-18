@@ -1,8 +1,5 @@
 pipeline {
   agent any
-  tools {
-    sonarQube 'SonarScanner'
-  }
   environment {
     
     AWS_REGION      = credentials('aws-region')
