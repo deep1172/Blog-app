@@ -43,7 +43,6 @@ pipeline {
                   -Dsonar.projectKey=blog-backend \
                   -Dsonar.sources=. \
                   -Dsonar.login=$SONAR_TOKEN \
-                  -Dsonar.host.url=http://3.110.130.224:9000 \
                   -Dsonar.working.directory=.scannerwork-backend
               '''
             }
@@ -56,13 +55,12 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
           withSonarQubeEnv('MySonarQube') {
-            dir('frontend') {
+            dir('Frontend') {
               sh '''
                 sonar-scanner \
                   -Dsonar.projectKey=blog-frontend \
                   -Dsonar.sources=. \
                   -Dsonar.login=$SONAR_TOKEN \
-                  -Dsonar.host.url=http://13.126.169.178:9000 \
                   -Dsonar.working.directory=.scannerwork-frontend
               '''
             }
